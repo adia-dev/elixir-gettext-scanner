@@ -85,22 +85,7 @@
           "icon": "resources/images/icon.png"
         }
       ]
-    },
-    "views": {
-      "gettext-scanner": [
-        {
-          "id": "gettext-scanner",
-          "name": "Gettext Scanner"
-        }
-      ]
-    },
-    "viewsWelcome": [
-      {
-        "view": "gettext-scanner.gettext-scanner",
-        "contents": "Scan the project for gettext strings",
-        "when": "config.gettext-scanner.enabled && view == gettext-scanner.gettext-scanner && viewItem == gettext-scanner.gettext-scanner"
-      }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

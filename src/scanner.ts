@@ -10,7 +10,6 @@ import * as path from "path";
 import { FileAnchor, GettextMsgId } from "./types";
 
 class Scanner {
-  private _directory: string;
   private _fileExtensions: string[];
   private _msgIdMap: Map<string, GettextMsgId>;
   private _regex: RegExp;
@@ -25,14 +24,7 @@ class Scanner {
     "dnpgettext",
   ];
 
-  constructor(
-    directory: string,
-    fileExtensions?: string[],
-    functions?: string[],
-    regex?: RegExp
-  ) {
-    this._directory = directory;
-
+  constructor(fileExtensions?: string[], functions?: string[], regex?: RegExp) {
     if (fileExtensions) {
       this._fileExtensions = fileExtensions;
     } else {
@@ -59,10 +51,6 @@ class Scanner {
     return this._msgIdMap;
   }
 
-  get directory() {
-    return this._directory;
-  }
-
   get fileExtensions() {
     return this._fileExtensions;
   }
@@ -73,10 +61,6 @@ class Scanner {
 
   get regex() {
     return this._regex;
-  }
-
-  set directory(directory: string) {
-    this._directory = directory;
   }
 
   set fileExtensions(fileExtensions: string[]) {
@@ -132,21 +116,21 @@ class Scanner {
     });
   }
 
-  public async scan() {
-    readDirRecursiveAndExecute(this._directory, this._scanFile.bind(this)).then(
-      () => {
+  public async scan(directory: string) {
+    readDirRecursiveAndExecute(directory, this._scanFile.bind(this)).then(
+      async () => {
         let jsonData: string = JSON.stringify(
           [...this._msgIdMap.entries()],
           null,
           2
         );
-        saveData(path.join(__dirname, "../data/msgids.json"), jsonData);
+        await saveData(path.join(__dirname, "../data/msgids.json"), jsonData);
 
         const poData: string = Array.from(this._msgIdMap)
           .map(([_, msgid]) => this._formatAsPOEntry(msgid))
           .reduce((acc, curr) => acc + curr);
 
-        saveData(path.join(__dirname, "../data/translations.po"), poData);
+        await saveData(path.join(__dirname, "../data/translations.po"), poData);
       }
     );
   }
