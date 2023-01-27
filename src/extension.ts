@@ -1,25 +1,51 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import Scanner from "./scanner";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  // Use the console to output diagnostic information (console.log) and errors (console.error)
+  // This line of code will only be executed once when your extension is activated
+  console.log(
+    'Congratulations, your extension "gettext-scanner" is now active!'
+  );
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "gettext-scanner" is now active!');
+  // The command has been defined in the package.json file
+  // Now provide the implementation of the command with registerCommand
+  // The commandId parameter must match the command field in package.json
+  let disposable = vscode.commands.registerCommand(
+    "gettext-scanner.helloWorld",
+    () => {
+      // The code you place here will be executed every time your command is executed
+      // Display a message box to the user
+      vscode.window.showInformationMessage("Hello World from gettext-scanner!");
+    }
+  );
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('gettext-scanner.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from gettext-scanner!');
-	});
+  let scanDisposable = vscode.commands.registerCommand(
+    "gettext-scanner.scan",
+    async () => {
+      let directory = await vscode.window.showInputBox({
+        prompt: "Enter the directory to scan",
+        placeHolder:
+          "/Users/abdoulayedia/Projects/Dev/vscode_extensions/gettext-scanner/src",
+      });
 
-	context.subscriptions.push(disposable);
+      if (directory !== undefined) {
+        const scanner = new Scanner(directory);
+        await scanner.scan();
+
+        await vscode.window.showInformationMessage(
+          `Scan completed, ${scanner.msgIdMap.size} msgids found`
+        );
+      }
+    }
+  );
+
+  context.subscriptions.push(disposable);
+  context.subscriptions.push(scanDisposable);
 }
 
 // This method is called when your extension is deactivated
