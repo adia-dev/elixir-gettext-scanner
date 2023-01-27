@@ -1,51 +1,100 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import path = require("path");
 import * as vscode from "vscode";
 import Scanner from "./scanner";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
   console.log(
     'Congratulations, your extension "gettext-scanner" is now active!'
   );
 
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand(
-    "gettext-scanner.helloWorld",
-    () => {
-      // The code you place here will be executed every time your command is executed
-      // Display a message box to the user
-      vscode.window.showInformationMessage("Hello World from gettext-scanner!");
-    }
-  );
+  const config = vscode.workspace.getConfiguration("gettext-scanner");
 
-  let scanDisposable = vscode.commands.registerCommand(
-    "gettext-scanner.scan",
-    async () => {
-      let directory = await vscode.window.showInputBox({
-        prompt: "Enter the directory to scan",
-        placeHolder:
-          "/Users/abdoulayedia/Projects/Dev/vscode_extensions/gettext-scanner/src",
-      });
+  if (config.get("enabled")) {
+    if (config.get("scanOnStartup")) {
+      let directory = config.get("scanPath") as string;
+      console.log(directory);
 
-      if (directory !== undefined) {
-        const scanner = new Scanner(directory);
-        await scanner.scan();
-
-        await vscode.window.showInformationMessage(
-          `Scan completed, ${scanner.msgIdMap.size} msgids found`
+      if (directory) {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (workspaceFolder) {
+          directory = path.join(workspaceFolder.uri.fsPath, directory);
+          const scanner = new Scanner(directory);
+          scanner.scan();
+          vscode.window.showInformationMessage("Scan completed on startup");
+        } else {
+          vscode.window.showErrorMessage(
+            "No workspace folder found, could not scan the project on startup"
+          );
+        }
+      } else {
+        vscode.window.showErrorMessage(
+          "No directory specified in settings, could not scan the project on startup"
         );
       }
     }
-  );
 
-  context.subscriptions.push(disposable);
-  context.subscriptions.push(scanDisposable);
+    if (config.get("scanOnSave")) {
+      vscode.workspace.onDidSaveTextDocument(async (document) => {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (workspaceFolder) {
+          const directory = path.join(
+            workspaceFolder.uri.fsPath,
+            config.get("scanPath") as string
+          );
+          const scanner = new Scanner(directory);
+          await scanner.scan();
+          vscode.window.showInformationMessage("Scan completed on save");
+        } else {
+          vscode.window.showErrorMessage(
+            "No workspace folder found, could not scan the project on save"
+          );
+        }
+      });
+    }
+
+    let scanDisposable = vscode.commands.registerCommand(
+      "gettext-scanner.scan",
+      async () => {
+        let predifinedDirectory = config.get("scanPath") as string;
+
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        if (workspaceFolder) {
+          if (predifinedDirectory) {
+            predifinedDirectory = path.join(
+              workspaceFolder.uri.fsPath,
+              predifinedDirectory
+            );
+          } else {
+            predifinedDirectory = path.join(workspaceFolder.uri.fsPath, "lib");
+          }
+        }
+
+        let directory = await vscode.window.showInputBox({
+          prompt: "Enter the directory to scan",
+          placeHolder:
+            "Enter the directory to scan, relative to the workspace root",
+          value: predifinedDirectory,
+        });
+
+        if (directory !== undefined) {
+          const scanner = new Scanner(directory);
+          await scanner.scan();
+
+          await vscode.window.showInformationMessage(
+            `Scan completed, ${scanner.msgIdMap.size} msgids found`
+          );
+        }
+      }
+    );
+
+    context.subscriptions.push(scanDisposable);
+  }
+
+  vscode.workspace.onDidChangeConfiguration((event) => {
+    if (event.affectsConfiguration("gettext-scanner")) {
+      vscode.commands.executeCommand("workbench.action.reloadWindow");
+    }
+  });
 }
 
 // This method is called when your extension is deactivated

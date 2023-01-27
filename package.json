@@ -10,18 +10,95 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onLanguage:elixir",
+    "onLanguage:phoenix-heex",
+    "onCommand:gettext-scanner.scan"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "gettext-scanner.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "gettext-scanner.scan",
-        "title": "Scan"
+        "title": "Scan the project for gettext strings"
+      }
+    ],
+    "configuration": {
+      "title": "Gettext Scanner",
+      "properties": {
+        "gettext-scanner.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Gettext Scanner"
+        },
+        "gettext-scanner.scanPath": {
+          "type": "string",
+          "default": "lib",
+          "description": "Scan Path"
+        },
+        "gettext-scanner.scanPattern": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "default": "**/*.js",
+          "description": "Scan Pattern"
+        },
+        "gettext-scanner.scanExcludePattern": {
+          "type": "string",
+          "default": "**/node_modules/**",
+          "description": "Scan Exclude Pattern"
+        },
+        "gettext-scanner.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan On Save"
+        },
+        "gettext-scanner.scanOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan On Startup"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "elixir",
+        "aliases": [
+          "Elixir",
+          "elixir"
+        ],
+        "extensions": [
+          ".ex",
+          ".exs",
+          ".eex",
+          ".leex",
+          ".heex"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "gettext-scanner",
+          "title": "Gettext Scanner",
+          "icon": "resources/images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "gettext-scanner": [
+        {
+          "id": "gettext-scanner",
+          "name": "Gettext Scanner"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "gettext-scanner.gettext-scanner",
+        "contents": "Scan the project for gettext strings",
+        "when": "config.gettext-scanner.enabled && view == gettext-scanner.gettext-scanner && viewItem == gettext-scanner.gettext-scanner"
       }
     ]
   },
