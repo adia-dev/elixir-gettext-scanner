@@ -12,14 +12,20 @@
   "activationEvents": [
     "onLanguage:elixir",
     "onLanguage:phoenix-heex",
-    "onCommand:gettext-scanner.scan"
+    "onCommand:gettext-scanner.scan",
+    "onCommand:gettext-scanner.refresh",
+    "onView:gettextMsgids"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "gettext-scanner.scan",
-        "title": "Scan the project for gettext strings"
+        "command": "gettext-scanner.refresh",
+        "title": "Refresh the gettext strings",
+        "icon": {
+          "light": "resources/images/light/refresh.svg",
+          "dark": "resources/images/dark/refresh.svg"
+        }
       }
     ],
     "configuration": {
@@ -77,12 +83,20 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
+    "views": {
+      "explorer": [
         {
-          "id": "gettext-scanner",
-          "title": "Gettext Scanner",
-          "icon": "resources/images/icon.png"
+          "id": "gettextMsgids",
+          "name": "Gettext Msgids"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "gettext-scanner.refresh",
+          "when": "view == gettextMsgids",
+          "group": "navigation"
         }
       ]
     }
