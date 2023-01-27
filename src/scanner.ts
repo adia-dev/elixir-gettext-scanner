@@ -117,7 +117,7 @@ class Scanner {
   }
 
   public async scan(directory: string) {
-    readDirRecursiveAndExecute(directory, this._scanFile.bind(this)).then(
+    await readDirRecursiveAndExecute(directory, this._scanFile.bind(this)).then(
       async () => {
         let jsonData: string = JSON.stringify(
           [...this._msgIdMap.entries()],
