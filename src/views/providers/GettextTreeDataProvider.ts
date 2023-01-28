@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import Scanner from "../../scanner";
-import { GettextMsgId } from "../../types";
+import { FileAnchor, GettextMsgId } from "../../types";
 
 export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
   constructor(private scanner: Scanner, private workspaceRoot: string) {}
@@ -15,7 +15,6 @@ export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
   > = this._onDidChangeTreeData.event;
 
   refresh(): void {
-    console.log(this.scanner);
     this._onDidChangeTreeData.fire();
   }
 
@@ -23,16 +22,47 @@ export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
     return element;
   }
 
-  getChildren(
-    element?: any
-  ): vscode.ProviderResult<Gettext[]> | Thenable<Gettext[]> {
+  getChildren(element?: any): vscode.ProviderResult<Gettext[]> {
     if (!this.workspaceRoot) {
       vscode.window.showInformationMessage("No msgids in empty workspace");
       return Promise.resolve([]);
     }
 
     if (element) {
-      return Promise.resolve(this.getScannedMsgids());
+      if (element instanceof Gettext) {
+        const anchors: FileAnchor[] =
+          this.scanner.msgIdMap.get(element.msgid)?.anchors || [];
+        return Promise.resolve(
+          anchors.map(
+            (anchor: FileAnchor) =>
+              new Gettext(
+                "",
+                `${anchor.path}:${anchor.line}`,
+                vscode.TreeItemCollapsibleState.None,
+                "",
+                "",
+                // command to open file at line
+                {
+                  command: "vscode.open",
+                  title: "Open File",
+                  arguments: [
+                    vscode.Uri.file(
+                      path.resolve(this.workspaceRoot, anchor.path)
+                    ),
+                    {
+                      selection: new vscode.Range(
+                        new vscode.Position(anchor.line, 0),
+                        new vscode.Position(anchor.line, 0)
+                      ),
+                    },
+                  ],
+                }
+              )
+          )
+        );
+      } else {
+        return Promise.resolve([]);
+      }
     } else {
       if (this.scanner.msgIdMap.size === 0) {
         vscode.window.showInformationMessage(
@@ -50,14 +80,13 @@ export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
       ([_, msgid]: [string, GettextMsgId]) =>
         new Gettext(
           msgid.id,
-          msgid.function,
-          vscode.TreeItemCollapsibleState.Collapsed
+          `${msgid.id} (${msgid.anchors.length})`,
+          msgid.anchors.length > 0
+            ? vscode.TreeItemCollapsibleState.Collapsed
+            : vscode.TreeItemCollapsibleState.Collapsed
         )
     );
     return msgids;
-    // return [
-    //   new Gettext("Hello", "2.0", vscode.TreeItemCollapsibleState.Collapsed),
-    // ];
   }
 
   private pathExists(p: string): boolean {
@@ -72,31 +101,36 @@ export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
 
 class Gettext extends vscode.TreeItem {
   constructor(
+    public readonly msgid: string,
     public readonly label: string,
-    private version: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    public readonly description?: string,
+    public readonly tooltip?: string,
+    public readonly command?: vscode.Command
   ) {
     super(label, collapsibleState);
-    this.tooltip = `${this.label}-${this.version}`;
-    this.description = this.version;
+    this.description = description;
+    this.command = command;
+    this.tooltip = tooltip;
+    this.iconPath = {
+      light: path.join(
+        __filename,
+        "..",
+        "..",
+        "resources",
+        "images",
+        "light",
+        "refresh.svg"
+      ),
+      dark: path.join(
+        __filename,
+        "..",
+        "..",
+        "resources",
+        "images",
+        "dark",
+        "refresh.svg"
+      ),
+    };
   }
-
-  iconPath = {
-    light: path.join(
-      __filename,
-      "..",
-      "..",
-      "resources",
-      "light",
-      "dependency.svg"
-    ),
-    dark: path.join(
-      __filename,
-      "..",
-      "..",
-      "resources",
-      "dark",
-      "dependency.svg"
-    ),
-  };
 }

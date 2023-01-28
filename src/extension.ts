@@ -48,6 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
   const refreshDisposable = vscode.commands.registerCommand(
     "gettext-scanner.refresh",
     async () => {
+      scanner.msgIdMap.clear();
       await scanner.scan(scanPathAbs);
 
       gettextProvider.refresh();
