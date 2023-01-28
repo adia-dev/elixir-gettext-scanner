@@ -26,6 +26,30 @@
           "light": "resources/images/light/refresh.svg",
           "dark": "resources/images/dark/refresh.svg"
         }
+      },
+      {
+        "command": "gettext-scanner.scan",
+        "title": "Scan the project for gettext strings",
+        "icon": {
+          "light": "resources/images/light/scan.svg",
+          "dark": "resources/images/dark/scan.svg"
+        }
+      },
+      {
+        "command": "gettext-scanner.scanAndRefresh",
+        "title": "Scan the project for gettext strings and refresh the view",
+        "icon": {
+          "light": "resources/images/light/scan.svg",
+          "dark": "resources/images/dark/scan.svg"
+        }
+      },
+      {
+        "command": "gettext-scanner.copyMsgid",
+        "title": "Copy the gettext string to the clipboard",
+        "icon": {
+          "light": "resources/images/light/copy.svg",
+          "dark": "resources/images/dark/copy.svg"
+        }
       }
     ],
     "configuration": {
@@ -84,10 +108,21 @@
       }
     ],
     "views": {
-      "explorer": [
+      "gettext-scanner": [
         {
           "id": "gettextMsgids",
-          "name": "Gettext Msgids"
+          "name": "Gettext Msgids",
+          "contextualTitle": "Gettext Msgids",
+          "icon": "resources/images/light/scan.svg"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "gettext-scanner",
+          "title": "Gettext Scanner",
+          "icon": "resources/images/light/scan.svg"
         }
       ]
     },
