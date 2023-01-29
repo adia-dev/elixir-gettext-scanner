@@ -38,3 +38,11 @@ None
 ### 0.0.1
 
 - Initial release
+
+### 0.0.2
+
+- Fix bug where the extension would not scan the correct path
+
+### 0.0.3
+
+- Change the icon on the activity bar
