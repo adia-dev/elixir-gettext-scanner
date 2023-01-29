@@ -15,6 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration("gettext-scanner");
   const scanner = new Scanner();
   const scanPath = config.get("scanPath");
+  let poFilesPath = config.get("poFilesPath");
 
   if (!config.get("enabled")) {
     vscode.window.showInformationMessage("Gettext Scanner is disabled");
@@ -31,7 +32,13 @@ export function activate(context: vscode.ExtensionContext) {
     return;
   }
 
+  if (!poFilesPath) {
+    vscode.window.showErrorMessage("No po files path found");
+    poFilesPath = "priv/gettext/fr";
+  }
+
   const scanPathAbs = path.resolve(rootPath, scanPath as string);
+  const poFilesPathAbs = path.resolve(rootPath, poFilesPath as string);
   const gettextProvider: GettextProvider = new GettextProvider(
     scanner,
     rootPath
@@ -52,6 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
     "gettext-scanner.refresh",
     async () => {
       scanner.msgIdMap.clear();
+      await scanner.scanExistingMsgIds(poFilesPathAbs);
       await scanner.scan(scanPathAbs);
 
       gettextProvider.refresh();
@@ -67,6 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.commands.registerCommand(
     "gettext-scanner.scanAndRefresh",
     async () => {
+      await scanner.scanExistingMsgIds(poFilesPathAbs);
       await scanner.scan(scanPathAbs);
       gettextProvider.refresh();
 

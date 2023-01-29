@@ -12,6 +12,7 @@ import { FileAnchor, GettextMsgId } from "./types";
 class Scanner {
   private _fileExtensions: string[];
   private _msgIdMap: Map<string, GettextMsgId>;
+  private _existingMsgIds: Map<string, GettextMsgId>;
   private _regex: RegExp;
   private _functions: string[] = [
     "gettext",
@@ -32,6 +33,7 @@ class Scanner {
     }
 
     this._msgIdMap = new Map();
+    this._existingMsgIds = new Map();
 
     if (functions) {
       this._functions = functions;
@@ -96,6 +98,11 @@ class Scanner {
           id = id.substring(1, id.length);
         }
 
+        // check if the msgid does already exist
+        if (this._existingMsgIds.has(id)) {
+          continue;
+        }
+
         let msgid = this._msgIdMap.get(id);
         const newAnchor: FileAnchor = {
           path: filePath,
@@ -110,6 +117,45 @@ class Scanner {
             id,
             anchors: [newAnchor],
             function: gettextFunction,
+          });
+        }
+      }
+    });
+  }
+
+  private async _scanMsgIdsFile(filePath: string, ...args: any[]) {
+    let msgidRegEx = new RegExp(`msgid\\s+"(.+?)"`, "g");
+    let matches: RegExpExecArray | null;
+
+    const fileContent = await readFileContent(filePath);
+    const lines = fileContent.split(/\r?\n/);
+    let lineNumber = 0;
+
+    lines.forEach((line) => {
+      lineNumber++;
+
+      while ((matches = msgidRegEx.exec(line)) !== null) {
+        let [_, id] = matches;
+
+        let msgid = this._existingMsgIds.get(id);
+
+        if (msgid !== undefined) {
+          msgid.anchors.push({
+            path: filePath,
+            line: lineNumber,
+            href: `${filePath}:${lineNumber}`,
+          });
+        } else {
+          this._existingMsgIds.set(id, {
+            id,
+            anchors: [
+              {
+                path: filePath,
+                line: lineNumber,
+                href: `${filePath}:${lineNumber}`,
+              },
+            ],
+            function: "msgid",
           });
         }
       }
@@ -133,6 +179,23 @@ class Scanner {
         await saveData(path.join(__dirname, "../data/translations.po"), poData);
       }
     );
+  }
+
+  public async scanExistingMsgIds(directory: string) {
+    await readDirRecursiveAndExecute(
+      directory,
+      this._scanMsgIdsFile.bind(this)
+    ).then(async () => {
+      let jsonData: string = JSON.stringify(
+        [...this._existingMsgIds.entries()],
+        null,
+        2
+      );
+      await saveData(
+        path.join(__dirname, "../data/existing-msgids.json"),
+        jsonData
+      );
+    });
   }
 
   private _formatAsPOEntry(msgid: GettextMsgId) {

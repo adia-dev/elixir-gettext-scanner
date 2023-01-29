@@ -75,6 +75,11 @@
           "default": "lib",
           "description": "Scan Path"
         },
+        "gettext.scanner.poFilesPath": {
+          "type": "string",
+          "default": "priv/gettext",
+          "description": "PO Files Path"
+        },
         "gettext-scanner.scanPattern": {
           "type": [
             "string",
