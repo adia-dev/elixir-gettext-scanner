@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   if (!poFilesPath) {
     vscode.window.showErrorMessage("No po files path found");
-    poFilesPath = "priv/gettext/fr";
+    poFilesPath = "priv/gettext";
   }
 
   const scanPathAbs = path.resolve(rootPath, scanPath as string);
