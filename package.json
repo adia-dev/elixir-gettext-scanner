@@ -14,6 +14,8 @@
     "onLanguage:phoenix-heex",
     "onCommand:gettext-scanner.scan",
     "onCommand:gettext-scanner.refresh",
+    "onCommand:gettext-scanner.scanAndRefresh",
+    "onCommand:gettext-scanner.copyMsgid",
     "onView:gettextMsgids"
   ],
   "main": "./out/extension.js",
@@ -21,7 +23,7 @@
     "commands": [
       {
         "command": "gettext-scanner.refresh",
-        "title": "Refresh the gettext strings",
+        "title": "gettext-scanner: Refresh the view",
         "icon": {
           "light": "resources/images/light/refresh.svg",
           "dark": "resources/images/dark/refresh.svg"
@@ -29,7 +31,7 @@
       },
       {
         "command": "gettext-scanner.scan",
-        "title": "Scan the project for gettext strings",
+        "title": "gettext-scanner: Scan the project for gettext strings",
         "icon": {
           "light": "resources/images/light/scan.svg",
           "dark": "resources/images/dark/scan.svg"
@@ -37,7 +39,7 @@
       },
       {
         "command": "gettext-scanner.scanAndRefresh",
-        "title": "Scan the project for gettext strings and refresh the view",
+        "title": "gettext-scanner: Scan the project for gettext strings and refresh the view",
         "icon": {
           "light": "resources/images/light/scan.svg",
           "dark": "resources/images/dark/scan.svg"
@@ -45,10 +47,18 @@
       },
       {
         "command": "gettext-scanner.copyMsgid",
-        "title": "Copy the gettext string to the clipboard",
+        "title": "gettext-scanner: Copy msgid",
         "icon": {
-          "light": "resources/images/light/copy.svg",
-          "dark": "resources/images/dark/copy.svg"
+          "light": "resources/images/light/clipboard.svg",
+          "dark": "resources/images/dark/clipboard.svg"
+        }
+      },
+      {
+        "command": "gettext-scanner.deleteMsgid",
+        "title": "gettext-scanner: Delete msgid",
+        "icon": {
+          "light": "resources/images/light/delete.svg",
+          "dark": "resources/images/dark/delete.svg"
         }
       }
     ],
@@ -133,8 +143,25 @@
           "when": "view == gettextMsgids",
           "group": "navigation"
         }
+      ],
+      "view/item/context": [
+        {
+          "command": "gettext-scanner.copyMsgid",
+          "when": "view == gettextMsgids",
+          "group": "inline"
+        },
+        {
+          "command": "gettext-scanner.deleteMsgid",
+          "when": "view == gettextMsgids"
+        }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "gettextMsgids",
+        "contents": "No gettext strings found. Please run the scan command to find gettext strings. [learn more](https://www.npmjs.com/).\n[Scan Now](command:gettext-scanner.scanAndRefresh)"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

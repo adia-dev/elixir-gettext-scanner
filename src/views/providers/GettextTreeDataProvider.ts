@@ -41,7 +41,6 @@ export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
                 vscode.TreeItemCollapsibleState.None,
                 "",
                 "",
-                // command to open file at line
                 {
                   command: "vscode.open",
                   title: "Open File",
@@ -99,7 +98,7 @@ export class GettextProvider implements vscode.TreeDataProvider<Gettext> {
   }
 }
 
-class Gettext extends vscode.TreeItem {
+export class Gettext extends vscode.TreeItem {
   constructor(
     public readonly msgid: string,
     public readonly label: string,

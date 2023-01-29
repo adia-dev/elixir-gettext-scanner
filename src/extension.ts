@@ -1,7 +1,10 @@
 import path = require("path");
 import * as vscode from "vscode";
 import Scanner from "./scanner";
-import { GettextProvider } from "./views/providers/GettextTreeDataProvider";
+import {
+  Gettext,
+  GettextProvider,
+} from "./views/providers/GettextTreeDataProvider";
 
 export function activate(context: vscode.ExtensionContext) {
   const rootPath =
@@ -60,6 +63,25 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.window.registerTreeDataProvider("gettextMsgids", gettextProvider);
+
+  vscode.commands.registerCommand(
+    "gettext-scanner.scanAndRefresh",
+    async () => {
+      await scanner.scan(scanPathAbs);
+      gettextProvider.refresh();
+
+      vscode.window.showInformationMessage(
+        `Scanned and refreshed ${scanPathAbs}, and found ${scanner.msgIdMap.size} translatable strings`
+      );
+    }
+  );
+
+  vscode.commands.registerCommand(
+    "gettext-scanner.copyMsgid",
+    async (msgid: Gettext) => {
+      await vscode.env.clipboard.writeText(msgid.label);
+    }
+  );
 
   context.subscriptions.push(refreshDisposable);
   context.subscriptions.push(disposable);
