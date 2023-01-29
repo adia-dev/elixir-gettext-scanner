@@ -1,7 +1,18 @@
 {
   "name": "gettext-scanner",
   "displayName": "gettext-scanner",
-  "description": "",
+  "description": "This extension scans your project for gettext strings and displays them in a view.",
+  "author": {
+    "name": "Sascha Kiefer",
+    "email": "abdoudu78130@gmail.com",
+    "url": "https://github.com/adia-dev"
+  },
+  "repository": {
+    "type": "git",
+    "directory": "gettext-scanner",
+    "url": "https://github.com/adia-dev"
+  },
+  "license": "MIT",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.74.0"
