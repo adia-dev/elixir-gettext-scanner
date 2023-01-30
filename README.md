@@ -46,3 +46,8 @@ None
 ### 0.0.3
 
 - Change the icon on the activity bar
+
+### 0.0.4
+
+- Add msgid to .pot file
+- Add google translate functionality (still very much a work in progress)
