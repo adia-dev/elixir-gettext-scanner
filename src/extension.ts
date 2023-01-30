@@ -7,6 +7,10 @@ import {
   GettextProvider,
 } from "./views/providers/GettextTreeDataProvider";
 import { fileExists } from "./file";
+import { translateText } from "./translate";
+import * as dotenv from "dotenv";
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 export function activate(context: vscode.ExtensionContext) {
   const rootPath =
@@ -177,8 +181,6 @@ export function activate(context: vscode.ExtensionContext) {
           fs.statSync(path.join(poFilesPathAbs, file)).isDirectory()
         );
 
-      console.log(locales);
-
       const selectedLocales = await vscode.window.showQuickPick(locales, {
         title: "Select a locale",
         placeHolder: "Select a locale",
@@ -200,7 +202,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       // add the msgid to the selected locales
-      selectedLocales.forEach((locale) => {
+      selectedLocales.forEach(async (locale) => {
         const poFilePath = path.join(
           poFilesPathAbs,
           locale,
@@ -223,7 +225,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (useGoogleTranslate === "Yes") {
           // msgstr = translate(msgid.msgid, { to: locale });
-          msgstr = 'msgstr ""';
+
+          const translated = await translateText(msgid.msgid, locale);
+
+          msgstr = `msgstr "${translated}"`;
         } else {
           msgstr = 'msgstr ""';
         }

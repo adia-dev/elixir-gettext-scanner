@@ -22,4 +22,9 @@ interface GettextMsgId {
   function: string;
 }
 
-export { FileAnchor, GettextMsgId };
+interface SupportedLanguage {
+  language: string;
+  code: string;
+}
+
+export { FileAnchor, GettextMsgId, SupportedLanguage };

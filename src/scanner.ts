@@ -170,13 +170,13 @@ class Scanner {
           null,
           2
         );
-        await saveData(path.join(__dirname, "../data/msgids.json"), jsonData);
+        await saveData(path.join(__dirname, "../tmp/msgids.json"), jsonData);
 
         const poData: string = Array.from(this._msgIdMap)
           .map(([_, msgid]) => this._formatAsPOEntry(msgid))
           .reduce((acc, curr) => acc + curr);
 
-        await saveData(path.join(__dirname, "../data/translations.po"), poData);
+        await saveData(path.join(__dirname, "../tmp/translations.po"), poData);
       }
     );
   }
@@ -192,7 +192,7 @@ class Scanner {
         2
       );
       await saveData(
-        path.join(__dirname, "../data/existing-msgids.json"),
+        path.join(__dirname, "../tmp/existing-msgids.json"),
         jsonData
       );
     });
