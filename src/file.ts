@@ -40,9 +40,23 @@ const saveData = async (filePath: string, data: string) => {
   await fs.writeFile(filePath, data);
 };
 
+const fileExists = async (filePath: string) => {
+  try {
+    fs.access(filePath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const absoluteToRelativePath = (filePath: string, rootPath: string) => {
+  return path.relative(rootPath, filePath);
+};
+
 export {
   readDirRecursive,
   readDirRecursiveAndExecute,
   readFileContent,
   saveData,
+  fileExists,
 };

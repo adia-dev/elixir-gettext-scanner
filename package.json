@@ -72,6 +72,14 @@
           "light": "resources/images/light/delete.svg",
           "dark": "resources/images/dark/delete.svg"
         }
+      },
+      {
+        "command": "gettext-scanner.addToPoFile",
+        "title": "gettext-scanner: Add msgid to PO file",
+        "icon": {
+          "light": "resources/images/light/add.svg",
+          "dark": "resources/images/dark/add.svg"
+        }
       }
     ],
     "configuration": {
@@ -87,7 +95,7 @@
           "default": "lib",
           "description": "Scan Path"
         },
-        "gettext.scanner.poFilesPath": {
+        "gettext-scanner.poFilesPath": {
           "type": "string",
           "default": "priv/gettext",
           "description": "PO Files Path"
@@ -169,6 +177,10 @@
         },
         {
           "command": "gettext-scanner.deleteMsgid",
+          "when": "view == gettextMsgids"
+        },
+        {
+          "command": "gettext-scanner.addToPoFile",
           "when": "view == gettextMsgids"
         }
       ]
