@@ -6,6 +6,7 @@ import {
   saveData,
 } from "./file";
 import * as path from "path";
+import * as fs from "fs";
 
 import { FileAnchor, GettextMsgId } from "./types";
 
@@ -90,7 +91,15 @@ class Scanner {
     this._msgIdMap = msgIdMap;
   }
 
-  private async _scanFile(filePath: string, ...args: any[]) {
+  set lastScanTime(lastScanTime: number | undefined) {
+    this._lastScanTime = lastScanTime;
+  }
+
+  public async scanFile(filePath: string, ...args: any[]) {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`File ${filePath} does not exist`);
+    }
+
     let matches: RegExpExecArray | null;
 
     const fileContent = await readFileContent(filePath);
@@ -172,8 +181,13 @@ class Scanner {
   }
 
   public async scan(directory: string) {
+    // check if the directory exists
+    if (!fs.existsSync(directory)) {
+      throw new Error(`Directory ${directory} does not exist`);
+    }
+
     this._lastScanTime = Date.now();
-    await readDirRecursiveAndExecute(directory, this._scanFile.bind(this)).then(
+    await readDirRecursiveAndExecute(directory, this.scanFile.bind(this)).then(
       async () => {
         let jsonData: string = JSON.stringify(
           [...this._msgIdMap.entries()],
@@ -192,6 +206,11 @@ class Scanner {
   }
 
   public async scanExistingMsgIds(directory: string) {
+    // check if the directory exists
+    if (!fs.existsSync(directory)) {
+      throw new Error(`Directory ${directory} does not exist`);
+    }
+
     await readDirRecursiveAndExecute(
       directory,
       this._scanMsgIdsFile.bind(this)

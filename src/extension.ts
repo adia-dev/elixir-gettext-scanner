@@ -59,34 +59,13 @@ export function activate(context: vscode.ExtensionContext) {
     triggerUpdateDecorations(scanner, activeEditor);
   }
 
-  vscode.window.onDidChangeActiveTextEditor(
-    (editor) => {
-      activeEditor = editor;
-      if (activeEditor) {
-        triggerUpdateDecorations(scanner, activeEditor);
-      }
-    },
-    null,
-    context.subscriptions
-  );
-
-  vscode.workspace.onDidChangeTextDocument(
-    (event) => {
-      if (activeEditor && event.document === activeEditor.document) {
-        triggerUpdateDecorations(scanner, activeEditor);
-      }
-    },
-    null,
-    context.subscriptions
-  );
-
-  const scanPathAbs = path.resolve(rootPath, scanPath as string);
-  const scanPathWorkspace = path.relative(
+  let scanPathAbs = path.resolve(rootPath, scanPath as string);
+  let scanPathWorkspace = path.relative(
     path.resolve(rootPath, ".."),
     scanPathAbs
   );
-  const poFilesPathAbs = path.resolve(rootPath, poFilesPath as string);
-  const poFilesPathWorkspace = path.relative(
+  let poFilesPathAbs = path.resolve(rootPath, poFilesPath as string);
+  let poFilesPathWorkspace = path.relative(
     path.resolve(rootPath, ".."),
     poFilesPathAbs
   );
@@ -281,6 +260,82 @@ export function activate(context: vscode.ExtensionContext) {
         `Added msgid to ${selectedLocales.join(", ")}`
       );
     }
+  );
+
+  vscode.window.onDidChangeActiveTextEditor(
+    (editor) => {
+      activeEditor = editor;
+      if (activeEditor) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
+    },
+    null,
+    context.subscriptions
+  );
+
+  vscode.workspace.onDidChangeTextDocument(
+    (event) => {
+      if (activeEditor && event.document === activeEditor.document) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
+    },
+    null,
+    context.subscriptions
+  );
+
+  vscode.workspace.onDidChangeConfiguration(
+    (event) => {
+      if (event.affectsConfiguration("gettext-scanner.poFilesPath")) {
+        poFilesPathWorkspace = vscode.workspace
+          .getConfiguration("gettext-scanner")
+          .get("poFilesPath") as string;
+        poFilesPathAbs = path.join(
+          vscode.workspace.rootPath as string,
+          poFilesPathWorkspace
+        );
+
+        if (!fileExists(poFilesPathAbs)) {
+          vscode.window.showErrorMessage(
+            `No po files found at ${poFilesPathWorkspace}`
+          );
+          return;
+        }
+      }
+
+      if (event.affectsConfiguration("gettext-scanner.scanPath")) {
+        scanPathWorkspace = vscode.workspace
+          .getConfiguration("gettext-scanner")
+          .get("scanPath") as string;
+        scanPathAbs = path.join(
+          vscode.workspace.rootPath as string,
+          scanPathWorkspace
+        );
+
+        if (!fileExists(scanPathAbs)) {
+          vscode.window.showErrorMessage(
+            `No scan path found at ${scanPathWorkspace}`
+          );
+          return;
+        }
+      }
+    },
+    null,
+    context.subscriptions
+  );
+
+  vscode.workspace.onDidSaveTextDocument(
+    async (document) => {
+      if (activeEditor && document === activeEditor.document) {
+        scanner.lastScanTime = Date.now();
+        scanner.msgIdMap.clear();
+        await scanner.scanExistingMsgIds(poFilesPathAbs);
+        await scanner.scanFile(document.fileName);
+        gettextProvider.refresh();
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
+    },
+    null,
+    context.subscriptions
   );
 
   context.subscriptions.push(refreshDisposable);

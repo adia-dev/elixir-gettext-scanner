@@ -26,7 +26,11 @@ const readDirRecursiveAndExecute = async (
     if (dirent.isDirectory()) {
       await readDirRecursiveAndExecute(res, callback);
     } else {
-      await callback(res, ...args);
+      try {
+        await callback(res, ...args);
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 };
