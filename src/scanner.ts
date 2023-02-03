@@ -14,6 +14,7 @@ class Scanner {
   private _msgIdMap: Map<string, GettextMsgId>;
   private _existingMsgIds: Map<string, GettextMsgId>;
   private _regex: RegExp;
+  private _lastScanTime: number | undefined;
   private _functions: string[] = [
     "gettext",
     "ngettext",
@@ -43,10 +44,14 @@ class Scanner {
       this._regex = regex;
     } else {
       this._regex = new RegExp(
-        `(${this._functions.join("|")})\\s*((?:\\(|")(.+?)(?:\\)|"))`,
+        `(${this._functions.join(
+          "|"
+        )})\\s*(?:\\()?("([^"]*)")(("([^"]*)"\\s*,\\s*)+)?\\s*("([^"]*)"\\s*\\)?|(?:.+)\\))?`,
         "g"
       );
     }
+
+    this._lastScanTime = undefined;
   }
 
   get msgIdMap() {
@@ -63,6 +68,10 @@ class Scanner {
 
   get regex() {
     return this._regex;
+  }
+
+  get lastScanTime() {
+    return this._lastScanTime;
   }
 
   set fileExtensions(fileExtensions: string[]) {
@@ -163,6 +172,7 @@ class Scanner {
   }
 
   public async scan(directory: string) {
+    this._lastScanTime = Date.now();
     await readDirRecursiveAndExecute(directory, this._scanFile.bind(this)).then(
       async () => {
         let jsonData: string = JSON.stringify(

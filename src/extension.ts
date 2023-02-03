@@ -9,6 +9,7 @@ import {
 import { fileExists } from "./file";
 import { translateText } from "./translate";
 import * as dotenv from "dotenv";
+import { triggerUpdateDecorations } from "./decoration";
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
@@ -52,6 +53,32 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.showErrorMessage("No po files path found");
     poFilesPath = "priv/gettext";
   }
+
+  let activeEditor = vscode.window.activeTextEditor;
+  if (activeEditor) {
+    triggerUpdateDecorations(scanner, activeEditor);
+  }
+
+  vscode.window.onDidChangeActiveTextEditor(
+    (editor) => {
+      activeEditor = editor;
+      if (activeEditor) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
+    },
+    null,
+    context.subscriptions
+  );
+
+  vscode.workspace.onDidChangeTextDocument(
+    (event) => {
+      if (activeEditor && event.document === activeEditor.document) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
+    },
+    null,
+    context.subscriptions
+  );
 
   const scanPathAbs = path.resolve(rootPath, scanPath as string);
   const scanPathWorkspace = path.relative(
@@ -114,6 +141,9 @@ export function activate(context: vscode.ExtensionContext) {
       await scanner.scan(scanPathAbs);
 
       gettextProvider.refresh();
+      if (activeEditor) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
 
       vscode.window.showInformationMessage(
         `Refreshed ${scanPathWorkspace}, and found ${scanner.msgIdMap.size} translatable strings`
@@ -144,6 +174,10 @@ export function activate(context: vscode.ExtensionContext) {
       await scanner.scan(scanPathAbs);
       gettextProvider.refresh();
 
+      if (activeEditor) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
+
       vscode.window.showInformationMessage(
         `Scanned and refreshed ${scanPathWorkspace}, and found ${scanner.msgIdMap.size} translatable strings`
       );
@@ -162,6 +196,9 @@ export function activate(context: vscode.ExtensionContext) {
     async (msgid: Gettext) => {
       scanner.msgIdMap.delete(msgid.label);
       gettextProvider.refresh();
+      if (activeEditor) {
+        triggerUpdateDecorations(scanner, activeEditor);
+      }
     }
   );
 

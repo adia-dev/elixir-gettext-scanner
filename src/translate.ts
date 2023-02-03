@@ -1,9 +1,12 @@
 import { SupportedLanguage } from "./types";
+import * as path from "path";
 
 // Imports the Google Cloud client library
 const { Translate } = require("@google-cloud/translate").v2;
-const supportedLanguages: SupportedLanguage[] =
-  require("/Users/abdoulayedia/Projects/Dev/vscode_extensions/gettext-scanner/data/supported_languages.json")?.text;
+const supportedLanguages: SupportedLanguage[] = require(path.resolve(
+  __dirname,
+  "../data/supported_languages.json"
+))?.languages;
 
 // Instantiates a client
 
