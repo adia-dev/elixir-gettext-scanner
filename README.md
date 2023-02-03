@@ -51,3 +51,8 @@ None
 
 - Add msgid to .pot file
 - Add google translate functionality (still very much a work in progress)
+
+### 0.0.5
+
+- New decorator to highlight msgids on the active editor
+- Scan the current file on save and refresh the decorator
